@@ -1,0 +1,1 @@
+enum TaskType { CORE, DISK, DISPLAY, INPUT }; 
