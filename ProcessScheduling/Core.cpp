@@ -3,10 +3,15 @@
 using namespace std;
 
 
-const Process nullProcess(-1, -1);
+extern Process nullProcess;
 
 Core::Core(int ts){
     timeSlice = ts;
+    available = true;
+    currentProcess = nullProcess;
+}
+Core::Core(){
+    timeSlice = 0;
     available = true;
     currentProcess = nullProcess;
 }
@@ -29,14 +34,14 @@ Process Core::getCurrentProcess() {
 
 void Core::setCurrentProcess(Process p){
     currentProcess = p;
-    if(p != nullProcess){
+    if(!p.equals(nullProcess)){
         available = false;
         sliceRemaining = timeSlice;
     }
 }
 
 Process Core::update(){
-    if(currentProcess != nullProcess && sliceRemaining > 0){
+    if(!currentProcess.equals(nullProcess) && sliceRemaining > 0){
         available = false;
         if(currentProcess.update()){
             available = true;

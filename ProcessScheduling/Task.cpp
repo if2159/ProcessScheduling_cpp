@@ -20,3 +20,7 @@ bool Task::update(){
 	timeLeft--;
 	return (timeLeft <= 0);
 }
+
+bool Task::equals(Task &t){
+	return (type == t.getType() && timeLeft == t.getTimeLeft());
+}

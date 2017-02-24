@@ -9,6 +9,7 @@ private:
 public:
     int timeSlice;
     Core(int ts);
+    Core();
     Process getCurrentProcess();
     int getSliceRemaining();
     int getTimeSlice();

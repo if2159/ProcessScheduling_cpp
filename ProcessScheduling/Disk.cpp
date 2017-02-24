@@ -3,7 +3,7 @@
 using namespace std;
 
 
-const Process nullProcess(-1, -1);
+extern Process nullProcess;
 
  Disk::Disk(){
         timeRemaining = 0;
@@ -29,7 +29,7 @@ const Process nullProcess(-1, -1);
 }
 
  Process Disk::update(){
-    if(currentProcess != nullProcess){
+    if(!currentProcess.equals(nullProcess)){
         available = false;
         if(currentProcess.update()){
             available = true; 

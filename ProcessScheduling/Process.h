@@ -13,13 +13,12 @@ public:
     Process();
     Process(int st, int pid);
     void addTask(Task t);
-    int getStartTime() const;
+    int getStartTime();
     Task getNextTask();
     void setLocation(ProcessLocation pl);
     ProcessLocation getLocation();
     bool update();  
-    bool operator==(const Process &p) const;
-    bool operator!=(const Process &p) const;
+    bool equals(Process &p);
 };
 
 #endif

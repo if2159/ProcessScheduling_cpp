@@ -3,7 +3,8 @@
 
 using namespace std;
 
-const Task NullTask(TaskType::INVALID,-1);
+Task NullTask(TaskType::INVALID,-1);
+
 Process::Process(int st, int pid){
     startTime = st;
     PID = pid;
@@ -20,7 +21,7 @@ void Process::addTask(Task t){
         tasks.push_back(t);
 }
 
-int Process::getStartTime()  const{
+int Process::getStartTime() {
     return startTime;
 }
 
@@ -88,9 +89,6 @@ bool Process::update(){
     return false;
 }
 
-bool Process::operator==(const Process &p) const{
+bool Process::equals(Process &p){
     return (this->startTime == p.getStartTime() && this->PID == p.PID);
-  }
-bool Process::operator!=(const Process &p) const{
-    return !(this->startTime == p.getStartTime() && this->PID == p.PID);
   }

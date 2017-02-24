@@ -11,6 +11,7 @@ public:
     TaskType getType();
     int getTimeLeft();
     bool update();
+    bool equals(Task &t);
 };
 
 #endif

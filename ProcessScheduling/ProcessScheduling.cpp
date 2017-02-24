@@ -4,10 +4,11 @@
 #include "Core.h"
 #include "Disk.h"
 #include <list>
+#include <vector>
 using namespace std;
 
-Core []coreArray;
-std::vector<Process> processList;
+Core *coreArray;
+vector<Process> processList;
 Disk disk;
 list<Process> readyQueue;
 list<Process> diskQueue;
@@ -16,40 +17,135 @@ vector<Process> waitingList;
 int tick = 0;
 int workingTasks = 1;
 int currentPID = 0;
+Process nullProcess(-1, -1);
+int coreSize = 0;
+Task nullTask(TaskType::INVALID,-1);
 
-/**
- * @param args the command line arguments
- */
-int main() {
-/*    readyQueue = new LinkedList();
-    diskQueue  = new LinkedList();
-    waitingList = new ArrayList();
-    displayList = new ArrayList();
-    processList = new ArrayList();
-    */
-    try{
-        readFile();
-    }
-    catch(FileNotFoundException e){
-        out.println("File  Not Found.");
-    }
-    out.println("*************START*************");
-    while(stillWorking()|| !waitingList.isEmpty()){
-        update();
-        
-        
-        
-        tick++;
-        if(tick > 99 && tick %100 == 0){
-            //outputState();
+
+void terminateProcess(Process p) {
+    string sb = "";
+    sb+= "\n\n";
+    sb += "CURRENT STATE OF THE SYSTEM AT t = ";
+    sb+= tick;
+    sb+= " ms:\n";
+    int busyCores = 0;
+    for(int i = 0; i < coreSize; i++){
+        Core c = coreArray[i];
+        if(!c.isAvailable()){
+            busyCores++;
         }
     }
+    sb+= "Current number of busy cores:" ;
+    sb+=  busyCores; 
+    sb+=  "\n";
+    sb+= "READY QUEUE:\n";
+    bool readyQueueEmpty = true;
+    for(const Process& pr: readyQueue){
+        readyQueueEmpty = false;
+        sb+= "Process: "; 
+        sb+=  pr.PID + "\n";
+    }
+    if(readyQueueEmpty){
+        sb+= "Empty\n";
+    }
+    
+    sb+= "DISK QUEUE:\n";
+    bool diskQueueEmpty = true;
+    for(Process pr: diskQueue){
+        diskQueueEmpty = false;
+        sb+= "Process: " ;
+        sb+=  pr.PID + "\n";
+    }
+    if(diskQueueEmpty){
+        sb+= "Empty\n";
+    }
+    sb+= "PROCESS TABLE\n";
+    for(Process pr: processList){
+        sb+= "Process ";
+        sb+= pr.PID;
+        sb+= " started at ";
+        sb+= pr.getStartTime();
+        sb+= " ms and is ";
+        if(pr.getNextTask().equals(nullTask)){
+            sb+= "TERMINATED\n";
+        }
+        else{
+            switch(pr.getLocation()){
+                case ProcessLocation::IN_CORE:
+                    sb+= "RUNNING\n";
+                    break;
+                case  ProcessLocation::IN_DISK:
+                    sb+= "BLOCKED - DISK\n";
+                    break;
+                case  ProcessLocation::IN_DISPLAY:
+                    sb+= "BLOCKED - DISPLAY\n";
+                    break;
+                case ProcessLocation::DISK_QUEUE:
+                case ProcessLocation::READY_QUEUE:
+                case ProcessLocation::WAITING:
+                    sb+= "READY\n";
+                break;
+            } 
+       }
+    }
+    for(int i = 0; i < processList.size(); i++){
+        if(processList[i].equals(p)){
+            processList.erase(processList.begin() + i);
+        }
+    }
+    sb+= "\n\n\n\n";
+    cout<<sb;
     
 }
 
-boolean stillWorking(){
+
+ void handleInput(string s, int n){
+    cout<<s<<" " << n << "\n";
+    if(s == "NCORES"){
+            coreArray = new Core[n];
+            coreSize = n;
+    }
+    else if(s == "SLICE"){
+        for(int i = 0; i < coreSize; i++){
+            coreArray[i] = Core(n);
+        }
+    }   
+    else if(s == "NEW"){
+        Process p = Process(n,currentPID++);
+        p.setLocation(ProcessLocation::WAITING);
+        processList.push_back(p);
+        waitingList.push_back(p);
+    }
+    else if(s == "CORE"){
+        waitingList[(waitingList.size()-1)].addTask(Task(TaskType::CORE,n));
+    }
+    else if(s == "DISK"){
+        waitingList[(waitingList.size()-1)].addTask(Task(TaskType::DISK, n));
+    }
+    else if(s == "DISPLAY"){
+        waitingList[(waitingList.size()-1)].addTask(Task(TaskType::DISPLAY, n));
+    }
+    else if(s == "INPUT"){
+        waitingList[(waitingList.size()-1)].addTask(Task(TaskType::DISPLAY, n));
+    }
+
+}
+
+void readFile(){
+    string s = "";
+    while(cin >> s){
+        int n = -1;
+        cin >> n;
+        handleInput(s,n);
+    }
+}
+
+
+
+bool stillWorking(){
+    cout<<"Still working \n";
     for(Process p: processList){
-        if(p.getNextTask() != null){
+        if(!p.getNextTask().equals(nullTask)){
             return true;
         }
     }
@@ -59,84 +155,92 @@ boolean stillWorking(){
 void emptyWaitList(){
     //Empty WaitList
     for (int i = 0; i < waitingList.size(); i++){
-        Process p = waitingList.get(i);
-        //out.println(p);
+        cout<<"INSIDE \n";
+        Process p = waitingList[i];
+        cout<<"getStartTime\n";
+
         if (p.getStartTime() <= tick) {
-            if(p.getNextTask() != null){
-                //out.println("TICK: " + tick);
+    cout<<"getNextTask\n";
+
+            if(!p.getNextTask().equals(nullTask)){
+    cout<<"switch\n";
+
                 switch (p.getNextTask().getType()) {
-                    case CORE:
-                        if(p.PID == 0)out.println("CORE PID:" + p.PID);
-                        readyQueue.add(p);
+                    case TaskType::CORE:
+                        readyQueue.push_back(p);
                         break;
-                    case DISK:
-                        if(p.PID == 0)
-                        out.println("DISK PID:" + p.PID);
-                        diskQueue.add(p);
+                    case TaskType::DISK:
+                        diskQueue.push_back(p);
                         break;
-                    case DISPLAY:
-                    case INPUT:
-                        //out.println("INPUT PID:" + p.PID);
-                        if(p.PID == 0)
-                        out.println("BEGIN DISPLAY for PID: " + p.PID + "at TIME: " + tick);
-                        p.setLocation(ProcessLocation.DISPLAY);
-                        displayList.add(p);
+                    case TaskType::DISPLAY:
+                    case TaskType::INPUT:
+                        p.setLocation(ProcessLocation::IN_DISPLAY);
+                        displayList.push_back(p);
                         break;
 
                 }
                 i--;
-                waitingList.remove(p);
+    cout<<"erase\n";
+        waitingList.erase(std::remove(waitingList.begin(), waitingList.end(), i), waitingList.end());
+    cout<<"afterErase\n";
+
                 workingTasks++;
             }
             else{
-                waitingList.remove(p);
+                waitingList.erase(waitingList.begin()+i);
                 terminateProcess(p);
                 workingTasks--;
             }
         }
     }
-    return 0;
 }
 
 
-void update(){
-    updateDisk();
-    updateDisplay();
-    updateCore();
-    changeCurrentTasks();
-    emptyWaitList();
-    changeCurrentTasks();
-    
-    
-    emptyWaitList();
-    changeCurrentTasks();
-    out.println(tick);
+ void changeCurrentTasks(){
+    cout<<"CORES\n";
+    for(int i = 0; i < coreSize; i++){
+        Core c = coreArray[i];
+        if(c.isAvailable() && !readyQueue.empty()){
+            Process p = readyQueue.front();
+            readyQueue.pop_front();
+            p.setLocation(ProcessLocation::IN_CORE);
+            c.setCurrentProcess(p);
+        }
+    }
+    cout<<"DISK\n";
+    if (disk.isAvailable() && !diskQueue.empty()) {
+        Process p = diskQueue.front();
+        diskQueue.pop_front();
+        p.setLocation(ProcessLocation::IN_DISK);
+        disk.setCurrentProcess(p);
+
+    }
     
 }
 
-void updateCore(){
+
+ void updateCore(){
     changeCurrentTasks();
-    for (Core c : coreArray) {
+    for(int i = 0; i < coreSize; i++){
+        Core c = coreArray[i];
         Process p = c.update();
-        if(p != null){
-            p.setLocation(ProcessLocation.WAITING);
-            c.setCurrentProcess(null);
-            if(p.PID == 0)
-            out.println("CORE completion for process: " + p.PID + " at time: " + tick);
-            waitingList.add(p);
+        if(!p.equals(nullProcess)){
+            p.setLocation(ProcessLocation::WAITING);
+            c.setCurrentProcess(nullProcess);
+            
+            waitingList.push_back(p);
             workingTasks--;
         }
     }
 }
 
-void updateDisplay(){
+ void updateDisplay(){
     for(int i = 0; i < displayList.size(); i++){
-        Process p = displayList.get(i);
+        Process p = displayList[i];
         if(p.update()){
-            if(p.PID == 0)
-            out.println("DISPLAY completion for process: " + p.PID + " at time: " + tick);
-            displayList.remove(p);
-            waitingList.add(p);
+            
+            displayList.erase(displayList.begin()+i);
+            waitingList.push_back(p);
             workingTasks--;
             i--;
         }
@@ -144,214 +248,51 @@ void updateDisplay(){
     }
 }
 
-void updateDisk(){
+ void updateDisk(){
     //DISK
     Process p = disk.update();
-    if (p != null) {
-        p.setLocation(ProcessLocation.WAITING);
-        if(p.PID == 0)
-        out.println("DISK completion for process: " + p.PID + " at time: " + tick);
-        waitingList.add(p);
+    if (!p.equals(nullProcess)) {
+        p.setLocation(ProcessLocation::WAITING);
+        
+        waitingList.push_back(p);
         workingTasks--;
     }
-    if(disk.isAvailable() && !diskQueue.isEmpty()){
-        p = diskQueue.pop();
-if(p.PID == 0)
-        out.println("Process: " + p.PID + "got DISK at: " + tick + "for " + p.getNextTask().getTimeLeft());
-        p.setLocation(ProcessLocation.DISK);
-        disk.setCurrentProcess(p);
-        
-    }
+    
 
 }
 
-void changeCurrentTasks(){
-    for(Core c: coreArray){
-        if(c.isAvailable() && !readyQueue.isEmpty()){
-            Process p = readyQueue.pop();
-            if(p.PID == 0)out.println("Process " + p.PID + " got CORE at: " + tick);
-            p.setLocation(ProcessLocation.CORE);
-            c.setCurrentProcess(p);
-        }
-    }
-    
-}
-//TODO Something is causing a blocked state or the processes in a core are set to waiting state. Unsure of whats happening
-void readFile() throws FileNotFoundException{
-    out.println("Number:");
-    //byte selection = (new Scanner(System.in)).nextByte();
-    Scanner fileIn;
-    /*switch(selection){
-        case 0:
-            fileIn = new Scanner(new File("input10.txt"));
-            break;
-        case 1:
-            fileIn = new Scanner(new File("input11.txt"));
-            break;
-        default:
-            throw new FileNotFoundException("File number " + selection + " not found");
-    }*/
-    fileIn = new Scanner(new File("input11.txt"));
-    disk = new Disk();
-    while(fileIn.hasNext()){
-        String s = fileIn.next();
-        int n    = fileIn.nextInt();
-        handleInput(s,n);
-    }
+
+
+
+
+ 
+ void update(){
+    cout<<"1\n";
+    changeCurrentTasks();
+    cout<<"2\n";
+    emptyWaitList();
+    cout<<"3\n";
+    changeCurrentTasks();
+    cout<<"4\n";
+    updateDisk();
+    cout<<"5\n";
+    updateDisplay();
+    cout<<"6\n";
+    updateCore();
+    cout<<"7\n";
+    emptyWaitList();
+    cout<<"8\n";
+    changeCurrentTasks();        
 }
 
-void handleInput(String s, int n){
-    out.println("new INPUT: " + s + " " + n);
-    switch(s){
-        case "NCORES":
-            coreArray = new Core[n];
-            break;
-        case "SLICE":
-            for(int i = 0; i < coreArray.length; i++){
-                coreArray[i] = new Core(n);
-            }
-            break;
-        case "NEW":
-            out.println("NEW" + n);
-            Process p = new Process(n,currentPID++);
-            p.setLocation(ProcessLocation.WAITING);
-            processList.add(p);
-            waitingList.add(p);
-            break;
-        case "CORE":
-            waitingList.get(waitingList.size()-1).addTask(new Task(TaskType.CORE,n));
-            break;
-        case "DISK":
-            waitingList.get(waitingList.size()-1).addTask(new Task(TaskType.DISK, n));
-            break;
-        case "DISPLAY":
-            waitingList.get(waitingList.size()-1).addTask(new Task(TaskType.DISPLAY, n));
-            break;
-        case "INPUT":
-            waitingList.get(waitingList.size()-1).addTask(new Task(TaskType.DISPLAY, n));
-            break;
-    
-    
-    
+int main() {
+    waitingList();
+    readFile();
+
+    while(stillWorking() || !waitingList.empty()){
+        update();
+        tick++;
     }
+    return 0;
 }
 
-void terminateProcess(Process p) {
-    StringBuilder sb = new StringBuilder();
-    sb.append("\n\n");
-    sb.append("CURRENT STATE OF THE SYSTEM AT t = " + tick + " ms:\n");
-    int busyCores = 0;
-    for(Core c: coreArray){
-        if(!c.isAvailable()){
-            busyCores++;
-        }
-    }
-    sb.append("Current number of busy cores:" +  busyCores + "\n");
-    sb.append("READY QUEUE:\n");
-    boolean readyQueueEmpty = true;
-    for(Process pr: readyQueue){
-        readyQueueEmpty = false;
-        sb.append("Process: " + pr.PID + "\n");
-    }
-    if(readyQueueEmpty){
-        sb.append("Empty\n");
-    }
-    
-    sb.append("DISK QUEUE:\n");
-    boolean diskQueueEmpty = true;
-    for(Process pr: diskQueue){
-        diskQueueEmpty = false;
-        sb.append("Process: " + pr.PID + "\n");
-    }
-    if(diskQueueEmpty){
-        sb.append("Empty\n");
-    }
-    sb.append("PROCESS TABLE\n");
-    for(Process pr: processList){
-        sb.append("Process " + pr.PID + " started at " + pr.getStartTime() + " ms and is ");
-        if(pr.getNextTask() == null){
-            sb.append("TERMINATED\n");
-        }
-        else{
-            switch(pr.getLocation()){
-                case CORE:
-                    sb.append("RUNNING\n");
-                    break;
-                case DISK:
-                    sb.append("BLOCKED - DISK\n");
-                    break;
-                case DISPLAY:
-                    sb.append("BLOCKED - DISPLAY\n");
-                    break;
-                case DISK_QUEUE:
-                case READY_QUEUE:
-                case WAITING:
-                    sb.append("READY\n");
-                break;
-            } 
-       }
-    }
-    processList.remove(p);
-    sb.append("\n\n\n\n");
-    out.println(sb.toString());
-    
-}
-
-void outputState(){
-    StringBuilder sb = new StringBuilder();
-    sb.append("\n\n");
-    sb.append("CURRENT STATE OF THE SYSTEM AT t = " + tick + " ms:\n");
-    int busyCores = 0;
-    for(Core c: coreArray){
-        if(!c.isAvailable()){
-            busyCores++;
-        }
-    }
-    sb.append("Current number of busy cores:" +  busyCores + "\n");
-    sb.append("READY QUEUE:\n");
-    boolean readyQueueEmpty = true;
-    for(Process pr: readyQueue){
-        readyQueueEmpty = false;
-        sb.append("Process: " + pr.PID + "\n");
-    }
-    if(readyQueueEmpty){
-        sb.append("Empty\n");
-    }
-    
-    sb.append("DISK QUEUE:\n");
-    boolean diskQueueEmpty = true;
-    for(Process pr: diskQueue){
-        diskQueueEmpty = false;
-        sb.append("Process: " + pr.PID + "\n");
-    }
-    if(diskQueueEmpty){
-        sb.append("Empty\n");
-    }
-    sb.append("PROCESS TABLE\n");
-    for(Process pr: processList){
-        sb.append("Process " + pr.PID + " started at " + pr.getStartTime() + " ms and is ");
-        if(pr.getNextTask() == null){
-            sb.append("TERMINATED\n");
-        }
-        else{
-            switch(pr.getLocation()){
-                case CORE:
-                    sb.append("RUNNING\n");
-                    break;
-                case DISK:
-                    sb.append("BLOCKED - DISK\n");
-                    break;
-                case DISPLAY:
-                    sb.append("BLOCKED - DISPLAY\n");
-                    break;
-                case DISK_QUEUE:
-                case READY_QUEUE:
-                case WAITING:
-                    sb.append("READY\n");
-                break;
-            }
-       }
-    }
-    sb.append("\n\n\n\n");
-    out.println(sb.toString());
-}
