@@ -1,18 +1,25 @@
 #ifndef Process_H
 #define Process_H
-#include "Process.h"
 #include "ProcessLocation.h"
+#include "Task.h"
+#include <list>
 class Process{
 private:
-    const int startTime;
-    List<Task> tasks;
-    const int PID;
+    int startTime;
+    std::list<Task> tasks;
     ProcessLocation location;
 public:
-    Task(TaskType tt, int initialTime);
-    TaskType getType();
-    int getTimeLeft();
-    bool update();
+    int PID;
+    Process();
+    Process(int st, int pid);
+    void addTask(Task t);
+    int getStartTime() const;
+    Task getNextTask();
+    void setLocation(ProcessLocation pl);
+    ProcessLocation getLocation();
+    bool update();  
+    bool operator==(const Process &p) const;
+    bool operator!=(const Process &p) const;
 };
 
 #endif

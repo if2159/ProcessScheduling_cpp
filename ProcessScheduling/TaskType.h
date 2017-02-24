@@ -1,1 +1,3 @@
-enum TaskType { CORE, DISK, DISPLAY, INPUT }; 
+enum class TaskType { 
+    CORE, DISK, DISPLAY, INPUT, INVALID
+}; 
