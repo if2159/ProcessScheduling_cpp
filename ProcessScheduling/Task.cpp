@@ -24,3 +24,7 @@ bool Task::update(){
 bool Task::equals(Task &t){
 	return (type == t.getType() && timeLeft == t.getTimeLeft());
 }
+
+bool Task::equals(Task *t){
+    return (type == t->getType() && timeLeft == t->getTimeLeft());
+}

@@ -5,17 +5,17 @@ class Core{
 private:
     int sliceRemaining;
     bool available;
-    Process currentProcess;
+    Process* currentProcess;
 public:
     int timeSlice;
     Core(int ts);
     Core();
-    Process getCurrentProcess();
+    Process* getCurrentProcess();
     int getSliceRemaining();
     int getTimeSlice();
     bool isAvailable(); 
-    void setCurrentProcess(Process p);
-    Process update();
+    void setCurrentProcess(Process* p);
+    Process* update();
 };
 
 #endif

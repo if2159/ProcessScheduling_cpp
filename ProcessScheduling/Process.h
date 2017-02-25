@@ -6,19 +6,23 @@
 class Process{
 private:
     int startTime;
-    std::list<Task> tasks;
+    std::list<Task*>* tasks;
     ProcessLocation location;
 public:
     int PID;
     Process();
     Process(int st, int pid);
-    void addTask(Task t);
+    void addTask(Task* t);
     int getStartTime();
-    Task getNextTask();
+    Task* getNextTask();
     void setLocation(ProcessLocation pl);
     ProcessLocation getLocation();
     bool update();  
     bool equals(Process &p);
+    bool equals(Process* p);
+
+    int getTaskListSize();
+
 };
 
 #endif

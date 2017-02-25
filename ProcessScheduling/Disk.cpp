@@ -3,12 +3,11 @@
 using namespace std;
 
 
-extern Process nullProcess;
 
  Disk::Disk(){
         timeRemaining = 0;
         available = true;
-        
+        currentProcess = NULL;
     }
 
  int Disk::getTimeRemaining() {
@@ -19,29 +18,29 @@ extern Process nullProcess;
     return available;
 }
 
- Process Disk::getCurrentProcess() {
+ Process* Disk::getCurrentProcess() {
     return currentProcess;
 }
 
- void Disk::setCurrentProcess(Process p){
+ void Disk::setCurrentProcess(Process* p){
     currentProcess = p;
-    timeRemaining = p.getNextTask().getTimeLeft();
+    timeRemaining = p->getNextTask()->getTimeLeft();
 }
 
- Process Disk::update(){
-    if(!currentProcess.equals(nullProcess)){
+ Process* Disk::update(){
+    if(currentProcess != NULL){
         available = false;
-        if(currentProcess.update()){
+        if(currentProcess->update()){
             available = true; 
-            Process p = currentProcess;
-            currentProcess = nullProcess;
+            Process* p = currentProcess;
+            currentProcess = NULL;
             return p;
         }
         timeRemaining--;
-        return nullProcess;
+        return NULL;
     }
-    Process p = currentProcess;
+    Process* p = currentProcess;
     available = true;
-    currentProcess = nullProcess;
+    currentProcess = NULL;
     return p;
 }

@@ -3,17 +3,16 @@
 using namespace std;
 
 
-extern Process nullProcess;
 
 Core::Core(int ts){
     timeSlice = ts;
     available = true;
-    currentProcess = nullProcess;
+    currentProcess = NULL;
 }
 Core::Core(){
     timeSlice = 0;
     available = true;
-    currentProcess = nullProcess;
+    currentProcess = NULL;
 }
 
 int Core::getTimeSlice() {
@@ -28,27 +27,28 @@ bool Core::isAvailable() {
     return available;
 }
 
-Process Core::getCurrentProcess() {
+Process* Core::getCurrentProcess() {
     return currentProcess;
 }
 
-void Core::setCurrentProcess(Process p){
+void Core::setCurrentProcess(Process* p){
     currentProcess = p;
-    if(!p.equals(nullProcess)){
+    if(p!=NULL){
         available = false;
         sliceRemaining = timeSlice;
     }
 }
 
-Process Core::update(){
-    if(!currentProcess.equals(nullProcess) && sliceRemaining > 0){
+Process* Core::update(){
+    //cout<<"UPDATING IN THE CORE\n";
+    if(currentProcess != NULL && sliceRemaining > 0){
         available = false;
-        if(currentProcess.update()){
+        if(currentProcess->update()){
             available = true;
             return currentProcess;
         }
         sliceRemaining--;
-        return nullProcess;
+        return NULL;
     }
     available = true;
     return currentProcess;

@@ -3,31 +3,29 @@
 #include "Process.h"
 #include "Core.h"
 #include "Disk.h"
-#include <list>
-#include <vector>
+#include <queue>
+
 using namespace std;
 
 Core *coreArray;
-vector<Process> processList;
+vector<Process*> processList;
 Disk disk;
-list<Process> readyQueue;
-list<Process> diskQueue;
-vector<Process>  displayList;
-vector<Process> waitingList;
+list<Process*> readyQueue;
+list<Process*> diskQueue;
+vector<Process*>  displayList;
+vector<Process*> waitingList;
 int tick = 0;
 int workingTasks = 1;
 int currentPID = 0;
-Process nullProcess(-1, -1);
 int coreSize = 0;
-Task nullTask(TaskType::INVALID,-1);
 
 
-void terminateProcess(Process p) {
-    string sb = "";
-    sb+= "\n\n";
-    sb += "CURRENT STATE OF THE SYSTEM AT t = ";
-    sb+= tick;
-    sb+= " ms:\n";
+void terminateProcess(Process* p) {
+    //cout<<"TERMINATING!\n\tPID: "<<p->PID<<"\n";
+    cout<< "\n\n";
+    cout<<"CURRENT STATE OF THE SYSTEM AT t = ";
+    cout<< tick;
+    cout<< " ms:\n";
     int busyCores = 0;
     for(int i = 0; i < coreSize; i++){
         Core c = coreArray[i];
@@ -35,72 +33,73 @@ void terminateProcess(Process p) {
             busyCores++;
         }
     }
-    sb+= "Current number of busy cores:" ;
-    sb+=  busyCores; 
-    sb+=  "\n";
-    sb+= "READY QUEUE:\n";
+    cout<< "Current number of busy cores:" ;
+    cout<<  busyCores;
+    cout<<  "\n";
+    cout<< "READY QUEUE:\n";
     bool readyQueueEmpty = true;
-    for(const Process& pr: readyQueue){
+    vector<Process> vp(readyQueue.size());
+    for(Process* pr: readyQueue){
         readyQueueEmpty = false;
-        sb+= "Process: "; 
-        sb+=  pr.PID + "\n";
+        cout<< "Process: ";
+        cout<<  pr->PID + "\n";
     }
     if(readyQueueEmpty){
-        sb+= "Empty\n";
+        cout<< "Empty\n";
     }
     
-    sb+= "DISK QUEUE:\n";
+    cout<< "DISK QUEUE:\n";
     bool diskQueueEmpty = true;
-    for(Process pr: diskQueue){
+    for(Process* pr: diskQueue){
         diskQueueEmpty = false;
-        sb+= "Process: " ;
-        sb+=  pr.PID + "\n";
+        cout<< "Process: " ;
+        cout<<  pr->PID + "\n";
     }
     if(diskQueueEmpty){
-        sb+= "Empty\n";
+        cout<< "Empty\n";
     }
-    sb+= "PROCESS TABLE\n";
-    for(Process pr: processList){
-        sb+= "Process ";
-        sb+= pr.PID;
-        sb+= " started at ";
-        sb+= pr.getStartTime();
-        sb+= " ms and is ";
-        if(pr.getNextTask().equals(nullTask)){
-            sb+= "TERMINATED\n";
+    cout<< "PROCESS TABLE\n";
+    for(Process* pr: processList){
+        cout<< "Process ";
+        cout<< pr->PID;
+        cout<< " started at ";
+        cout<< pr->getStartTime();
+        cout<< " ms and is ";
+        if(pr->getNextTask() == NULL){
+            cout<< "TERMINATED\n";
         }
         else{
-            switch(pr.getLocation()){
+            switch(pr->getLocation()){
                 case ProcessLocation::IN_CORE:
-                    sb+= "RUNNING\n";
+                    cout<< "RUNNING\n";
                     break;
                 case  ProcessLocation::IN_DISK:
-                    sb+= "BLOCKED - DISK\n";
+                    cout<< "BLOCKED - DISK\n";
                     break;
                 case  ProcessLocation::IN_DISPLAY:
-                    sb+= "BLOCKED - DISPLAY\n";
+                    cout<< "BLOCKED - DISPLAY\n";
                     break;
                 case ProcessLocation::DISK_QUEUE:
                 case ProcessLocation::READY_QUEUE:
                 case ProcessLocation::WAITING:
-                    sb+= "READY\n";
+                    cout<< "READY\n";
                 break;
+
             } 
        }
     }
     for(int i = 0; i < processList.size(); i++){
-        if(processList[i].equals(p)){
+        if(processList[i]->equals(p)){
             processList.erase(processList.begin() + i);
         }
     }
-    sb+= "\n\n\n\n";
-    cout<<sb;
+    cout<< "\n\n\n\n";
     
 }
 
 
  void handleInput(string s, int n){
-    cout<<s<<" " << n << "\n";
+    //cout<<s<<" " << n << "\n";
     if(s == "NCORES"){
             coreArray = new Core[n];
             coreSize = n;
@@ -111,27 +110,32 @@ void terminateProcess(Process p) {
         }
     }   
     else if(s == "NEW"){
-        Process p = Process(n,currentPID++);
-        p.setLocation(ProcessLocation::WAITING);
+        Process* p = new Process(n,currentPID++);
+        p->setLocation(ProcessLocation::WAITING);
         processList.push_back(p);
         waitingList.push_back(p);
     }
     else if(s == "CORE"){
-        waitingList[(waitingList.size()-1)].addTask(Task(TaskType::CORE,n));
+        Task* t = new Task(TaskType::CORE,n);
+        //cout<<"pew\n";
+        //cout<<"Task Size:"<<waitingList.size()<<"\n";
+        waitingList[(waitingList.size()-1)]->addTask(t);
     }
     else if(s == "DISK"){
-        waitingList[(waitingList.size()-1)].addTask(Task(TaskType::DISK, n));
+        waitingList[(waitingList.size()-1)]->addTask(new Task(TaskType::DISK, n));
     }
     else if(s == "DISPLAY"){
-        waitingList[(waitingList.size()-1)].addTask(Task(TaskType::DISPLAY, n));
+        waitingList[(waitingList.size()-1)]->addTask(new Task(TaskType::DISPLAY, n));
     }
     else if(s == "INPUT"){
-        waitingList[(waitingList.size()-1)].addTask(Task(TaskType::DISPLAY, n));
+        waitingList[(waitingList.size()-1)]->addTask(new Task(TaskType::DISPLAY, n));
     }
 
 }
 
 void readFile(){
+    //std::ifstream in("C:\\Users\\Ian Fennen\\Desktop\\School Work\\Spring 2017\\COSC 3360\\HW1\\c++\\ProcessScheduling_cpp\\ProcessScheduling\\input12.txt");
+    //std::cin.rdbuf(in.rdbuf());
     string s = "";
     while(cin >> s){
         int n = -1;
@@ -143,29 +147,31 @@ void readFile(){
 
 
 bool stillWorking(){
-    cout<<"Still working \n";
-    for(Process p: processList){
-        if(!p.getNextTask().equals(nullTask)){
+    //cout<<"Still working \n";
+    for(int i = 0; i < processList.size(); i++){
+        Process* p = processList[i];
+        //cout<<"Checking...\n";
+        if(p->getNextTask()!= NULL){
+            //cout<<"It has stuff!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
             return true;
         }
     }
+    //cout<<"It's empty...\n";
     return false;
 }
 
 void emptyWaitList(){
     //Empty WaitList
+/*    for (int i = 0; i < waitingList.size(); i++) {
+        //cout<<"\t"<<waitingList[i]->getTaskListSize()<<"\n";
+
+    }*/
+
     for (int i = 0; i < waitingList.size(); i++){
-        cout<<"INSIDE \n";
-        Process p = waitingList[i];
-        cout<<"getStartTime\n";
-
-        if (p.getStartTime() <= tick) {
-    cout<<"getNextTask\n";
-
-            if(!p.getNextTask().equals(nullTask)){
-    cout<<"switch\n";
-
-                switch (p.getNextTask().getType()) {
+        Process* p = waitingList[i];
+        if (p->getStartTime() <= tick) {
+            if(p->getNextTask()!= NULL){
+                switch (p->getNextTask()->getType()) {
                     case TaskType::CORE:
                         readyQueue.push_back(p);
                         break;
@@ -174,19 +180,22 @@ void emptyWaitList(){
                         break;
                     case TaskType::DISPLAY:
                     case TaskType::INPUT:
-                        p.setLocation(ProcessLocation::IN_DISPLAY);
+                        p->setLocation(ProcessLocation::IN_DISPLAY);
                         displayList.push_back(p);
                         break;
 
+                    case TaskType::INVALID:break;
                 }
+    //cout<<"erase\n";
+        //waitingList.erase(waitingList.begin()+i);
+                waitingList.erase(waitingList.begin()+i);
                 i--;
-    cout<<"erase\n";
-        waitingList.erase(std::remove(waitingList.begin(), waitingList.end(), i), waitingList.end());
-    cout<<"afterErase\n";
+    //cout<<"afterErase\n";
 
                 workingTasks++;
             }
             else{
+               // cout<<"SHOULD TERMINATE PID: "<<waitingList[i]->PID<<"\n";
                 waitingList.erase(waitingList.begin()+i);
                 terminateProcess(p);
                 workingTasks--;
@@ -197,48 +206,60 @@ void emptyWaitList(){
 
 
  void changeCurrentTasks(){
-    cout<<"CORES\n";
-    for(int i = 0; i < coreSize; i++){
+    //cout<<"CORES\n";
+     //cout<<"\t"<<readyQueue.front()->getTaskListSize()<<"\n";
+     for(int i = 0; i < coreSize; i++){
         Core c = coreArray[i];
+        //Task* tl = c.getCurrentProcess()->getNextTask();
+        //cout<<"NULL TEST "<< tl->getTimeLeft()<<"\n";
         if(c.isAvailable() && !readyQueue.empty()){
-            Process p = readyQueue.front();
+            Process* p = readyQueue.front();
             readyQueue.pop_front();
-            p.setLocation(ProcessLocation::IN_CORE);
+            p->setLocation(ProcessLocation::IN_CORE);
             c.setCurrentProcess(p);
+            coreArray[i] = c;
+            //cout <<"NEW TASK IN CORE PID: " << p->PID << "\n";
+
         }
     }
-    cout<<"DISK\n";
+    //cout<<"DISK\n";
     if (disk.isAvailable() && !diskQueue.empty()) {
-        Process p = diskQueue.front();
+        Process* p = diskQueue.front();
         diskQueue.pop_front();
-        p.setLocation(ProcessLocation::IN_DISK);
+        p->setLocation(ProcessLocation::IN_DISK);
         disk.setCurrentProcess(p);
 
     }
+     //cout<<"AFTER DISK\n";
     
 }
 
 
  void updateCore(){
     changeCurrentTasks();
+     //cout<<"Update COre******\n";
     for(int i = 0; i < coreSize; i++){
         Core c = coreArray[i];
-        Process p = c.update();
-        if(!p.equals(nullProcess)){
-            p.setLocation(ProcessLocation::WAITING);
-            c.setCurrentProcess(nullProcess);
+        Process* p = c.update();
+        if(p != NULL){
+//            cout<<"Process finished CORE PID: "<<p->PID<<"\n";
+
+            p->setLocation(ProcessLocation::WAITING);
+            c.setCurrentProcess(NULL);
             
             waitingList.push_back(p);
             workingTasks--;
         }
+        coreArray[i] = c;
     }
 }
 
  void updateDisplay(){
     for(int i = 0; i < displayList.size(); i++){
-        Process p = displayList[i];
-        if(p.update()){
-            
+        Process* p = displayList[i];
+        if(p->update()){
+ //           cout<<"Process finished DISPLAY PID: "<<p->PID<<"\n";
+
             displayList.erase(displayList.begin()+i);
             waitingList.push_back(p);
             workingTasks--;
@@ -250,12 +271,14 @@ void emptyWaitList(){
 
  void updateDisk(){
     //DISK
-    Process p = disk.update();
-    if (!p.equals(nullProcess)) {
-        p.setLocation(ProcessLocation::WAITING);
+    Process* p = disk.update();
+    if (p != NULL) {
+ //       cout<<"Process finished DISK PID: "<<p->PID<<"\n";
+        p->setLocation(ProcessLocation::WAITING);
         
         waitingList.push_back(p);
         workingTasks--;
+ //       cout<<"new task in DISK PID: "<<p->PID<<"\n";
     }
     
 
@@ -267,30 +290,32 @@ void emptyWaitList(){
 
  
  void update(){
-    cout<<"1\n";
+//    cout<<"1\n";
     changeCurrentTasks();
-    cout<<"2\n";
+//    cout<<"2\n";
     emptyWaitList();
-    cout<<"3\n";
+//    cout<<"3\n";
     changeCurrentTasks();
-    cout<<"4\n";
+//    cout<<"4\n";
     updateDisk();
-    cout<<"5\n";
+//    cout<<"5\n";
     updateDisplay();
-    cout<<"6\n";
+//    cout<<"6\n";
     updateCore();
-    cout<<"7\n";
+//    cout<<"7\n";
     emptyWaitList();
-    cout<<"8\n";
+//    cout<<"8\n";
     changeCurrentTasks();        
 }
 
 int main() {
-    waitingList();
+//    waitingList();
+    //cout<<"starting\n";
     readFile();
 
     while(stillWorking() || !waitingList.empty()){
         update();
+       // cout<<tick<<"\n";
         tick++;
     }
     return 0;

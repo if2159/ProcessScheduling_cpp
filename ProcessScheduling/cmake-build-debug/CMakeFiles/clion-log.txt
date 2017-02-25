@@ -1,0 +1,4 @@
+"C:\Users\Ian Fennen\.CLion2016.3\system\cygwin_cmake\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" "/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling"
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/cmake-build-debug

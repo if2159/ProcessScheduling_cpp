@@ -12,6 +12,8 @@ public:
     int getTimeLeft();
     bool update();
     bool equals(Task &t);
+
+    bool equals(Task *t);
 };
 
 #endif

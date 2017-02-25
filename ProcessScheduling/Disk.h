@@ -5,14 +5,14 @@ class Disk{
 private:
     int timeRemaining;
     bool available;
-    Process currentProcess;
+    Process* currentProcess;
 public:
     Disk();
-    Process getCurrentProcess(); 
+    Process* getCurrentProcess();
     int     getTimeRemaining(); 
     bool isAvailable();
-    void    setCurrentProcess(Process p);
-    Process update();
+    void    setCurrentProcess(Process* p);
+    Process* update();
 };
 
 #endif

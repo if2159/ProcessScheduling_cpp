@@ -1,0 +1,70 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/Core.cpp
+Core.h
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/Core.h
+iostream
+-
+
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/Core.h
+Process.h
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/Process.h
+
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/Disk.cpp
+Disk.h
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/Disk.h
+iostream
+-
+
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/Disk.h
+Process.h
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/Process.h
+
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/Process.cpp
+Process.h
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/Process.h
+iostream
+-
+
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/Process.h
+ProcessLocation.h
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/ProcessLocation.h
+Task.h
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/Task.h
+list
+-
+
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/ProcessLocation.h
+
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/ProcessScheduling.cpp
+iostream
+-
+Task.h
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/Task.h
+Process.h
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/Process.h
+Core.h
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/Core.h
+Disk.h
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/Disk.h
+queue
+-
+
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/Task.cpp
+Task.h
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/Task.h
+iostream
+-
+
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/Task.h
+TaskType.h
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/TaskType.h
+
+/cygdrive/c/Users/Ian Fennen/Desktop/School Work/Spring 2017/COSC 3360/HW1/c++/ProcessScheduling_cpp/ProcessScheduling/TaskType.h
+

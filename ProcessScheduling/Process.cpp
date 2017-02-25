@@ -1,14 +1,12 @@
 #include "Process.h"
 #include <iostream>
-
 using namespace std;
 
-Task NullTask(TaskType::INVALID,-1);
 
 Process::Process(int st, int pid){
     startTime = st;
     PID = pid;
-    //tasks();
+    tasks = new list<Task*>();
 }
 
 Process::Process(){
@@ -17,19 +15,23 @@ Process::Process(){
 
 }
 
-void Process::addTask(Task t){
-        tasks.push_back(t);
+void Process::addTask(Task* t){
+        tasks->push_back(t);
+}
+
+int Process::getTaskListSize(){
+    return tasks->size();
 }
 
 int Process::getStartTime() {
     return startTime;
 }
 
- Task Process::getNextTask(){
-    if(!tasks.empty()){
-        return tasks.front();
+ Task* Process::getNextTask(){
+    if(!tasks->empty()){
+        return (tasks->front());
     }
-    return NullTask;
+    return NULL;
 }
 
  void Process::setLocation(ProcessLocation pl){
@@ -42,16 +44,21 @@ int Process::getStartTime() {
 
 
 bool Process::update(){
-    if(tasks.empty()){
+    if(tasks->empty()){
         return true;
     }
-    Task currentTask = tasks.front();
-    switch(currentTask.getType()){
+
+    //cout<<"In Update\n";
+    Task* currentTask = tasks->front();
+    switch(currentTask->getType()){
         case TaskType::CORE:
+            //cout<<"CORE*****************************\n";
             if(location == ProcessLocation::IN_CORE){
-                if(currentTask.update()){
+                bool b = currentTask->update();
+                //std::cout<<"value of B" << b <<"\n";
+                if(b){
                     
-                    tasks.pop_front();
+                    tasks->pop_front();
                     return true;
                 }
                 else{
@@ -59,30 +66,35 @@ bool Process::update(){
             }
            break;
         case TaskType::DISK:
+            //cout<<"DISK*****************************\n";
+
             if (location == ProcessLocation::IN_DISK) {
-                if (currentTask.update()) {
-                    tasks.pop_front();
+                if (currentTask->update()) {
+                    tasks->pop_front();
                     return true;
                 }
             }
            break;
         case TaskType::DISPLAY:
+            //cout<<"DISP*****************************\n";
             if(location == ProcessLocation::IN_DISPLAY){
-                if(currentTask.update()){
-                    tasks.pop_front();
+                if(currentTask->update()){
+                    tasks->pop_front();
                     return true;
                 }
             }
            break;
         case TaskType::INPUT:
+            //cout<<"INPUT*****************************\n";
             if (location == ProcessLocation::IN_DISPLAY) {
-                if (currentTask.update()) {
-                    tasks.pop_front();
+                if (currentTask->update()) {
+                    tasks->pop_front();
                     return true;
                 }
             }
            break;
         default:
+            //cout<<"Broken*****************************\n";
             //Waiting in a queue. Do nothing.
            break;
     }
@@ -92,3 +104,6 @@ bool Process::update(){
 bool Process::equals(Process &p){
     return (this->startTime == p.getStartTime() && this->PID == p.PID);
   }
+bool Process::equals(Process* p){
+    return (this->startTime == p->getStartTime() && this->PID == p->PID);
+}
